@@ -6,9 +6,6 @@ from app.internal.repository.rabbitmq.try_on_task import TryOnTaskRepository
 from app.internal.repository.rabbitmq.try_on_response import TryOnRespRepository
 from app.pkg.workers.try_on.worker import TryOnWorker
 from app.internal.services import AmazonS3Service
-from app.pkg.ml.try_on.preprocessing.aggregator import ClothProcessor
-from app.pkg.ml.try_on.preprocessing.aggregator import HumanProcessor
-from app.pkg.ml.try_on.lady_vton import LadyVtonAggregator
 from app.pkg.logger import get_logger
 
 logger = get_logger(__name__)
@@ -22,9 +19,13 @@ def start_worker():
     resp_repository = TryOnRespRepository()
     file_service = AmazonS3Service()
 
-    clothes_model = ClothProcessor()
-    human_model = HumanProcessor()
-    try_on_model = LadyVtonAggregator()
+    # clothes_model = ClothProcessor()
+    # human_model = HumanProcessor()
+    # try_on_model = LadyVtonAggregator()
+
+    clothes_model = None
+    human_model = None
+    try_on_model = None
 
     model_worker = TryOnWorker(
         task_repository=task_repository,

@@ -7,7 +7,6 @@ from app.internal.repository.rabbitmq.cut_response import CutRespRepository
 from app.internal.services import AmazonS3Service
 from app.pkg.models import CutResponseCmd
 from app.pkg.logger import get_logger
-from app.pkg.ml.try_on.preprocessing.aggregator import ClothProcessor
 from app.pkg.settings import settings
 
 logger = get_logger(__name__)
@@ -18,7 +17,6 @@ class CutWorker:
     task_repository: CutTaskRepository
     resp_repository: CutRespRepository
     file_service: AmazonS3Service
-    clothes_model: ClothProcessor
 
 
     def __init__(
@@ -26,7 +24,7 @@ class CutWorker:
         task_repository: CutTaskRepository,
         resp_repository: CutRespRepository,
         file_service: AmazonS3Service,
-        clothes_model: ClothProcessor,
+        clothes_model,
     ):
         self.task_repository = task_repository
         self.resp_repository = resp_repository
@@ -50,11 +48,12 @@ class CutWorker:
                 message.clothes_id,
             )
             # Model pipeline           
-            cutted_clothes = self.pipeline(clothes_image=clothes_image)
+            # cutted_clothes = self.pipeline(clothes_image=clothes_image)
+            cutted_clothes = clothes_image
 
             # Save result
             res_file_name = message.clothes_id
-            res_file_dir = f"{settings.ML.CUT_DIR}/{message.user_image_id}"
+            res_file_dir = settings.ML.CUT_DIR
 
             self.file_service.upload(
                 file=cutted_clothes,
@@ -69,7 +68,6 @@ class CutWorker:
             )
             cmd = CutResponseCmd(
                 **message.dict(),
-                clothes_id=res_file_name,
                 result_dir=res_file_dir,
             )
             await self.resp_repository.create(cmd=cmd)
